@@ -14,24 +14,28 @@ public class SpiritBehaviour : MonoBehaviour
     public Vector2 move = new Vector2(0,0);
     private Vector3 look;
     public GameObject player;
+    private Animator anim;
     public SpriteRenderer sprite;
 
     void Start()
     {
         player = GameObject.Find("Player");
         sprite = gameObject.GetComponent<SpriteRenderer>();
+        anim = gameObject.GetComponent<Animator>();
     }
 
     // Update is called once per frame
     void Update()
     {
-        look = (player.transform.position - transform.position).normalized;
+        look = player.transform.position - transform.position;
         if(health == 0){
             Destroy(gameObject);
         }else if(invulnerability){
             sprite.enabled = !sprite.enabled;
+        }else{
+            MovementController();
+            transform.Translate(move*speed*Time.deltaTime);
         }
-        transform.Translate(look*speed*Time.deltaTime);
     }
     private void OnTriggerEnter2D(Collider2D col){
         if(!invulnerability)
@@ -41,9 +45,50 @@ public class SpiritBehaviour : MonoBehaviour
             }
         StartCoroutine("Invulnerable");
     }
+    void MovementController(){
+        move = new Vector2(0,0);
+        if(Math.Abs(look.x)>Math.Abs(look.y))
+            {anim.SetBool("U",false);
+            anim.SetBool("D",false);
+            if(look.x<0)
+            {anim.SetBool("L",true);
+            anim.SetBool("R",false);
+            move.x =-1;}
+            else 
+            if(look.x>0)
+            {anim.SetBool("L",false);
+            anim.SetBool("R",true);
+            move.x = 1;}
+            else move.x = 0;}
+        else 
+        if(Math.Abs(look.x)<Math.Abs(look.y))
+            {anim.SetBool("R",false);
+            anim.SetBool("L",false);
+            if(look.y>0)
+            {anim.SetBool("U",true);
+            anim.SetBool("D",false);
+            move.y =1;}
+            else 
+            if(look.y<0)
+            {anim.SetBool("U",false);
+            anim.SetBool("D",true);
+            move.y = -1;}
+            else move.y = 0;}
+        else move = Pick();
+
+    }
+    Vector2 Pick(){
+        Vector2 val = new Vector2(0,0);
+        val = new Vector2(UnityEngine.Random.Range(-1,2),UnityEngine.Random.Range(-1,2));
+        if((val.x == -1 || val.x == 1)&&(val.y == -1 || val.y == 1)){
+            val = Pick();
+        }
+        return val;
+    }
     IEnumerator Invulnerable(){
         yield return new WaitForSeconds(0.2f);
         invulnerability = false;
         sprite.enabled = true;
+
     }
 }
