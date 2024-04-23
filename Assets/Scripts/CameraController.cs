@@ -1,11 +1,13 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class CameraController : MonoBehaviour
 {
 
-    private float boundaryX = 10;
+    private float boundaryX = 12;
     private float boundaryYTop =7f;
     private float boundaryYBottom =4;
     //private Camera camera;
@@ -20,6 +22,9 @@ public class CameraController : MonoBehaviour
     // Update is called once per frame
     void LateUpdate()
     {
+        if(Input.GetKeyUp(KeyCode.Escape)){
+            SceneManager.LoadScene("Main Game");
+        }
         boundaryX = 12;
         if(player.transform.position.x > transform.position.x + boundaryX){
             transform.position = new Vector3(transform.position.x + 2*boundaryX,transform.position.y,-10);

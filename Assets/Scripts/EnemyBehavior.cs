@@ -1,27 +1,30 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEditor;
 using UnityEngine;
 
-public class SpiritBehaviour : MonoBehaviour
+public class EnemyBehavior : MonoBehaviour
 {
     // Start is called before the first frame update
     public int speed;
     public float move_time;
     public int health;
     private bool invulnerability = false;
+    private Rigidbody2D rb;
     public Vector2 move = new Vector2(0,0);
     private Vector3 look;
     public GameObject player;
     private Animator anim;
     public SpriteRenderer sprite;
-
+    
     void Start()
     {
         player = GameObject.Find("Player");
         sprite = gameObject.GetComponent<SpriteRenderer>();
         anim = gameObject.GetComponent<Animator>();
+        rb = GetComponent<Rigidbody2D>();
     }
 
     // Update is called once per frame
@@ -32,18 +35,20 @@ public class SpiritBehaviour : MonoBehaviour
             Destroy(gameObject);
         }else if(invulnerability){
             sprite.enabled = !sprite.enabled;
-        }else{
-            MovementController();
-            transform.Translate(move*speed*Time.deltaTime);
+            speed =0;
         }
+            MovementController();
+            rb.velocity = move*speed;
+            //transform.Translate(move*speed*Time.deltaTime);
+        
     }
     private void OnTriggerEnter2D(Collider2D col){
         if(!invulnerability)
             if(col.gameObject.tag.Equals("sword")||col.gameObject.tag.Equals("Bomb")){
                 health--;
                 invulnerability = true;
+                StartCoroutine("Invulnerable");
             }
-        StartCoroutine("Invulnerable");
     }
     void MovementController(){
         move = new Vector2(0,0);
@@ -89,6 +94,7 @@ public class SpiritBehaviour : MonoBehaviour
         yield return new WaitForSeconds(0.2f);
         invulnerability = false;
         sprite.enabled = true;
+        speed = 2;
 
     }
 }
