@@ -13,9 +13,4 @@ public class ActivateObject : MonoBehaviour
     }
 
     // Update is called once per frame
-    private void OnTriggerEnter2D(Collider2D col){
-        if(col.CompareTag("Main Camera")){
-            gameObject.SetActive(false);
-        }
-    }
 }

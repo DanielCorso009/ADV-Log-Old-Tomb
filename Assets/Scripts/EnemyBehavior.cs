@@ -43,9 +43,6 @@ public class EnemyBehavior : MonoBehaviour
         
     }
     private void OnTriggerEnter2D(Collider2D col){
-        if(col.CompareTag("Main Camera")){
-
-        }
         if(!invulnerability)
             if(col.gameObject.tag.Equals("sword")||col.gameObject.tag.Equals("Bomb")){
                 health--;
