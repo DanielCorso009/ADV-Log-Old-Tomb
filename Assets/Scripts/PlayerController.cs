@@ -11,8 +11,8 @@ public class PlayerController : MonoBehaviour
     public bool invulnerabilityTime = false;
     public bool frozen = false;
     public bool freeze_inpts = false;
-    private Vector2 move = new Vector2(0,0);
-
+    public Vector2 move = new Vector2(0,0);
+    public Vector2 lastSavedPosition;
     private Animator anim;
     private SpriteRenderer sprite;
     public GameObject sword;
@@ -33,7 +33,7 @@ public class PlayerController : MonoBehaviour
     void Update()
     {
         if(!frozen){
-            if(!freeze_inpts)MovementController();
+            if(!freeze_inpts){MovementController(); }
             AttackController();
         //transform.Translate(move * speed*Time.deltaTime);
         //rb.AddForce(move*speed);
@@ -59,7 +59,7 @@ public class PlayerController : MonoBehaviour
 
             anim.SetBool("Walk", true);
             sprite.flipX = false;
-
+            lastSavedPosition = transform.position;
         }
         else if(Input.GetKey(KeyCode.A)||Input.GetKey(KeyCode.LeftArrow)){
             L = 1;
@@ -70,6 +70,7 @@ public class PlayerController : MonoBehaviour
             anim.SetBool("Walk", true);
 
             sprite.flipX = true;
+            lastSavedPosition = transform.position;
         }
         else if(Input.GetKey(KeyCode.S)||Input.GetKey(KeyCode.DownArrow)){
             D = 1;
@@ -79,6 +80,7 @@ public class PlayerController : MonoBehaviour
             
             anim.SetBool("Walk", true);
             sprite.flipX = false;
+            lastSavedPosition = transform.position;
         }
         else if(Input.GetKey(KeyCode.D)||Input.GetKey(KeyCode.RightArrow)){
             R = 1;
@@ -88,6 +90,7 @@ public class PlayerController : MonoBehaviour
             
             anim.SetBool("Walk", true);
             sprite.flipX = false;
+            lastSavedPosition = transform.position;
 
         }else{
             anim.SetBool("Walk", false);
@@ -97,6 +100,8 @@ public class PlayerController : MonoBehaviour
     }
     void AttackController(){
         freeze_inpts = false;
+        anim.SetBool("Thrust", false);
+        Physics2D.IgnoreLayerCollision(3,4,false);
         bool ZX = Input.GetKey(KeyCode.Z) && Input.GetKey(KeyCode.X);
 
         bool XC = Input.GetKeyDown(KeyCode.X) && Input.GetKeyDown(KeyCode.C);
@@ -105,6 +110,8 @@ public class PlayerController : MonoBehaviour
         if(ZX){//thrust combo
             speed = 8;
             freeze_inpts =true;
+            Physics2D.IgnoreLayerCollision(3,4,true);
+            anim.SetBool("Thrust",true);
             if(anim.GetBool("Up")){
                 anim.SetBool("Down", false);
                 anim.SetBool("Side", false);
@@ -153,9 +160,7 @@ public class PlayerController : MonoBehaviour
     }
     void OnTriggerStay2D(Collider2D col)
     {
-        //if(freeze_inpts){
-           // Instantiate(explosive,transform.position,transform.rotation);
-        //}
+
         if(!invulnerabilityTime){
             print(col.gameObject.tag);
             switch(col.gameObject.tag){
@@ -175,6 +180,11 @@ public class PlayerController : MonoBehaviour
     }
     void OnCollisionEnter2D(Collision2D col){
         anim.SetBool("Push", true);
+        if(freeze_inpts){
+           Instantiate(explosive,transform.position,transform.rotation);
+           freeze_inpts = false;
+           anim.SetBool("Thrust", false);
+        }
 
     }
     void OnCollisionExit2D(){
