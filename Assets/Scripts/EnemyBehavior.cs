@@ -9,18 +9,23 @@ public class EnemyBehavior : MonoBehaviour
 {
     // Start is called before the first frame update
     public int speed;
-    public float move_time;
+    public float move_time = 0f;
     public int health;
     private bool invulnerability = false;
+    //private bool frozen = false;
     private Rigidbody2D rb;
     public Vector2 move = new Vector2(0,0);
     private Vector3 look;
     public GameObject player;
     private Animator anim;
     public SpriteRenderer sprite;
+    public LayerMask coll;
+
+    public Transform trans;
     
     void Start()
     {
+        trans.parent = null;
         player = GameObject.Find("Player");
         sprite = gameObject.GetComponent<SpriteRenderer>();
         anim = gameObject.GetComponent<Animator>();
@@ -30,17 +35,28 @@ public class EnemyBehavior : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        look = player.transform.position - transform.position;
+        transform.position = Vector3.MoveTowards(transform.position,trans.position,speed*Time.deltaTime);
+
         if(health == 0){
             Destroy(gameObject);
-        }else if(invulnerability){
-            sprite.enabled = !sprite.enabled;
-            speed =0;
+            Destroy(trans.gameObject);
         }
-            MovementController();
-            rb.velocity = move*speed;
-            //transform.Translate(move*speed*Time.deltaTime);
+
+        if(invulnerability){
+            sprite.enabled = !sprite.enabled;
+        }else{
+            if(Vector2.Distance(transform.position,trans.position) <= 0.1f){
+                if(!Physics2D.OverlapCircle(trans.position+ new Vector3(move.x*0.25f,move.y*0.25f,transform.position.z),0.3f,coll)){
+                    if(move_time <=0f){MovementController();}
+                    trans.position += new Vector3(move.x*0.25f,move.y*0.25f,transform.position.z);}
+                else {move = Pick(move); print(move);}
+            }
+            move_time--;
+        }
         
+    }
+    void OnCollisionEnter2D(Collision2D col){
+        trans.position = transform.position;
     }
     private void OnTriggerEnter2D(Collider2D col){
         if(!invulnerability)
@@ -51,42 +67,36 @@ public class EnemyBehavior : MonoBehaviour
             }
     }
     void MovementController(){
-        move = new Vector2(0,0);
-        if(Math.Abs(look.x)>Math.Abs(look.y))
-            {anim.SetBool("U",false);
+         move = Pick(new Vector2(1,1));
+        if(move.x ==1 && move.y ==0){
+            anim.SetBool("U",false);
             anim.SetBool("D",false);
-            if(look.x<0)
-            {anim.SetBool("L",true);
-            anim.SetBool("R",false);
-            move.x =-1;}
-            else 
-            if(look.x>0)
-            {anim.SetBool("L",false);
             anim.SetBool("R",true);
-            move.x = 1;}
-            else move.x = 0;}
-        else 
-        if(Math.Abs(look.x)<Math.Abs(look.y))
-            {anim.SetBool("R",false);
             anim.SetBool("L",false);
-            if(look.y>0)
-            {anim.SetBool("U",true);
+        }else if(move.x ==-1 && move.y ==0){
+            anim.SetBool("U",false);
             anim.SetBool("D",false);
-            move.y =1;}
-            else 
-            if(look.y<0)
-            {anim.SetBool("U",false);
+            anim.SetBool("R",false);
+            anim.SetBool("L",true);
+        }else if(move.y ==1 && move.x ==0){
+            anim.SetBool("R",false);
+            anim.SetBool("L",false);
+            anim.SetBool("U",true);
+            anim.SetBool("D",false);
+        }else if(move.y ==-1 && move.x ==0){
+            anim.SetBool("R",false);
+            anim.SetBool("L",false);
+            anim.SetBool("U",false);
             anim.SetBool("D",true);
-            move.y = -1;}
-            else move.y = 0;}
-        else move = Pick();
-
+        }
+        move_time = 180;
     }
-    Vector2 Pick(){
+
+    Vector2 Pick(Vector2 exclude){
         Vector2 val = new Vector2(0,0);
         val = new Vector2(UnityEngine.Random.Range(-1,2),UnityEngine.Random.Range(-1,2));
-        if((val.x == -1 || val.x == 1)&&(val.y == -1 || val.y == 1)){
-            val = Pick();
+        if(((val.x == -1 || val.x == 1)&&(val.y == -1 || val.y == 1))||val == new Vector2(0,0) || val==exclude){
+            val = Pick(exclude);
         }
         return val;
     }

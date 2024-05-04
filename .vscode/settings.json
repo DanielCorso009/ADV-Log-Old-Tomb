@@ -56,5 +56,6 @@
         "temp/": true,
         "Temp/": true
     },
-    "dotnet.defaultSolution": "Tomb.sln"
+    "dotnet.defaultSolution": "Tomb.sln",
+    "window.autoDetectColorScheme": false
 }
