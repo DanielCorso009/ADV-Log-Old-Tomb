@@ -15,7 +15,7 @@ GameObject:
   - component: {fileID: 4346703187738297487}
   m_Layer: 0
   m_Name: Arrow
-  m_TagString: Untagged
+  m_TagString: arrow
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -116,7 +116,7 @@ BoxCollider2D:
   m_CallbackLayers:
     serializedVersion: 2
     m_Bits: 4294967295
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_UsedByEffector: 0
   m_UsedByComposite: 0
   m_Offset: {x: 0.0325815, y: 0.37496406}
@@ -175,5 +175,6 @@ MonoBehaviour:
   damage: 1
   rb: {fileID: 1669365591676409723}
   isExplosive: 0
-  isBoomerang: 0
+  isLaser: 0
+  dir: {x: 0, y: 0}
   explosive: {fileID: 4614802983353438838, guid: 3c2b5056f81e466469b6d49ff4c8f8ef, type: 3}

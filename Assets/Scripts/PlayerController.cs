@@ -7,17 +7,21 @@ using UnityEngine;
 public class PlayerController : MonoBehaviour
 {
     public int speed = 10;
-    public int health = 5;
+    private int maxHealth;
+    public int health;
     public float useTime = 0f;
     public bool invulnerabilityTime = false;
     public bool frozen = false;
     public bool freeze_inpts = false;
     public bool freeze_atks = false;
+    public bool wait = false;
+    public bool regen = false;
     public LayerMask coll;
     public Vector2 move = new Vector2(0,0);
     public Vector2 lastSavedPosition;
     public Animator anim;
     public SpriteRenderer sprite;
+
     public GameObject sword;
     public GameObject bomb;
     public GameObject explosive;
@@ -27,8 +31,6 @@ public class PlayerController : MonoBehaviour
     public GameObject sworderang;
     public GameObject enemy;
     public Transform trans;
-
-    private Rigidbody2D rb;
     public    int U = 0;
     public    int D = 0;
     public    int L = 0;
@@ -39,8 +41,8 @@ public class PlayerController : MonoBehaviour
         trans.parent = null;
         anim  = GetComponent<Animator>();
         sprite = GetComponent<SpriteRenderer>();
-        rb = GetComponent<Rigidbody2D>();
-        print(coll.value);
+        maxHealth = health;
+        //print(coll.value);
     }
 
     // Update is called once per frame
@@ -52,9 +54,30 @@ public class PlayerController : MonoBehaviour
                 if(Vector2.Distance(transform.position,trans.position) <= 0.05f){
                     if(!freeze_inpts)MovementController(); 
                     if(!Physics2D.OverlapCircle(trans.position+ new Vector3(move.x*0.25f,move.y*0.25f,transform.position.z),0.3f,coll))
-                        trans.position += new Vector3(move.x*0.25f,move.y*0.25f,transform.position.z);
+                        if(!Physics2D.OverlapCircle(trans.position+ new Vector3(move.x*0.25f,move.y*0.25f,transform.position.z),0.3f, layerMask: 1024)){
+                            trans.position += new Vector3(move.x*0.25f,move.y*0.25f,transform.position.z);
+                            anim.SetBool("Push",false);
+                        }
+                        else{
+                            anim.SetBool("Push",true);
+                            Physics2D.CircleCastAll(trans.position+ new Vector3(move.x*0.25f,move.y*0.25f,transform.position.z),0.3f,move)[1].collider.GetComponent<MovingBlockBehavior>().Push(move);
+                        }
+                    else{
+                        if(freeze_inpts){
+                            Instantiate(explosive,transform.position,transform.rotation);
+                            freeze_inpts = false;
+                            anim.SetBool("Thrust", false);
+                            wait = true;
+                            StartCoroutine("CoolOff");
+                        }
+                    }
                 }
                 if(!freeze_atks)AttackController();
+            if(health < maxHealth && !regen){
+                StartCoroutine("Regenerate");
+                regen = true;
+
+            }
         }
 
         if(invulnerabilityTime){
@@ -119,7 +142,7 @@ public class PlayerController : MonoBehaviour
     void AttackController(){
         freeze_inpts = false;
         anim.SetBool("Thrust", false);
-        coll.value = 208;
+        coll.value = 208+2048;
         Physics2D.IgnoreLayerCollision(3,4,false);
 
         bool ZX = (Input.GetKey(KeyCode.Z) && Input.GetKey(KeyCode.X))||Input.GetKey(KeyCode.Space);
@@ -128,10 +151,10 @@ public class PlayerController : MonoBehaviour
 
         bool ZC = (Input.GetKeyDown(KeyCode.Z) && Input.GetKeyDown(KeyCode.C))||Input.GetKeyDown(KeyCode.B);
         
-        if(ZX){//thrust combo
+        if(ZX && !wait){//thrust combo
             speed = 10;
             freeze_inpts =true;
-            coll.value = 192;
+            coll.value = 192+2048;
             Physics2D.IgnoreLayerCollision(3,4,true);
             anim.SetBool("Thrust",true);
             if(anim.GetBool("Up")){
@@ -147,7 +170,7 @@ public class PlayerController : MonoBehaviour
                 anim.SetBool("Up", false);
                 move = new Vector2(sprite.flipX ? -1:1,0);
             }
-        }else if(XC){
+        }else if(XC && !wait){
                     if(anim.GetBool("Up")){
                         Instantiate(bow,transform.position + new Vector3(0,0.3f,2),Quaternion.Euler(0,0,90));
                         Instantiate(rocket,transform.position + new Vector3(0,0.5f,-2),Quaternion.Euler(0,0,0));}
@@ -162,7 +185,9 @@ public class PlayerController : MonoBehaviour
                 speed = 0;
                 useTime = 0.5f;
                 StartCoroutine("Unfreeze");
-        }else if(ZC){
+                wait = true;
+                StartCoroutine("CoolOff");
+        }else if(ZC && !wait){
                     if(anim.GetBool("Up")){
                         Instantiate(bow,transform.position + new Vector3(0,0.3f,2),Quaternion.Euler(0,0,90));
                         Instantiate(sworderang,transform.position + new Vector3(0,1f,-2),transform.rotation);}
@@ -178,6 +203,8 @@ public class PlayerController : MonoBehaviour
                 speed = 0;
                 useTime = 0.4f;
                 StartCoroutine("Unfreeze");
+                wait = true;
+                StartCoroutine("CoolOff");
 
         }else{
             if(Input.GetKeyDown(KeyCode.Z)){
@@ -194,11 +221,11 @@ public class PlayerController : MonoBehaviour
                 StartCoroutine("Unfreeze");
             }else if(Input.GetKeyDown(KeyCode.X)){
                     if(anim.GetBool("Up")){
-                        Instantiate(bomb,transform.position + new Vector3(0,0.5f,-2),Quaternion.Euler(0,0,0));}
+                        Instantiate(bomb,transform.position + new Vector3(0,0.25f,-2),Quaternion.Euler(0,0,0));}
                     else if(anim.GetBool("Down")){
-                        Instantiate(bomb,transform.position + new Vector3(0,-0.5f,-2),Quaternion.Euler(0,0,0));}
+                        Instantiate(bomb,transform.position + new Vector3(0,-0.25f,-2),Quaternion.Euler(0,0,0));}
                     else if(anim.GetBool("Side")){
-                        Instantiate(bomb,transform.position + new Vector3(0.75f* (sprite.flipX ? -1:1),0,-2),Quaternion.Euler(0,0,0));}
+                        Instantiate(bomb,transform.position + new Vector3(0.25f* (sprite.flipX ? -1:1),0,-2),Quaternion.Euler(0,0,0));}
                 anim.SetTrigger("Atk");
                 frozen = true;
                 speed = 0;
@@ -225,7 +252,6 @@ public class PlayerController : MonoBehaviour
     }
     void OnTriggerStay2D(Collider2D col)
     {
-
         if(!invulnerabilityTime){
             print(col.gameObject.tag);
             switch(col.gameObject.tag){
@@ -239,20 +265,19 @@ public class PlayerController : MonoBehaviour
                     invulnerabilityTime = true;
                     StartCoroutine("Invulnerable");
                 break;
+                case"spike":
+                    health-=4;
+                    invulnerabilityTime = true;
+                    StartCoroutine("Invulnerable");
+                    break;
             }
 
         }
     }
-    void OnCollisionEnter2D(Collision2D col){
-        if(freeze_inpts){
-           Instantiate(explosive,transform.position,transform.rotation);
-           freeze_inpts = false;
-           anim.SetBool("Thrust", false);
-        }
 
-    }
-    void OnCollisionExit2D(){
-        
+    IEnumerator CoolOff(){
+        yield return new WaitForSeconds(2);
+        wait = false;
     }
     IEnumerator Invulnerable(){
         yield return new WaitForSeconds(1.5f);
@@ -264,4 +289,14 @@ public class PlayerController : MonoBehaviour
         frozen = false;
         speed = 5;
     }
+    IEnumerator Regenerate(){
+        yield return new WaitForSeconds(10);
+        health++;
+        if(health == maxHealth){
+            regen = false;
+        }else{
+            StartCoroutine("Regenerate");
+        }
+    }
+
 }

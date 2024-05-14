@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 7347167659219945561}
   - component: {fileID: 1388824793726644240}
   - component: {fileID: -6686977084143331199}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Bow
   m_TagString: Untagged
   m_Icon: {fileID: 0}

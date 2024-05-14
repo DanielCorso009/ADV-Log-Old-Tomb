@@ -7,6 +7,10 @@ TagManager:
   - sword
   - Bomb
   - Enemy
+  - arrow
+  - Block
+  - spike
+  - button
   layers:
   - Default
   - TransparentFX
@@ -19,8 +23,8 @@ TagManager:
   - Ground
   - Enemy
   - Block
-  - 
-  - 
+  - Staticheye
+  - Barrier
   - 
   - 
   - 
