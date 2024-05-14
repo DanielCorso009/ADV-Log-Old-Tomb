@@ -22,7 +22,7 @@ public class UI : MonoBehaviour
     void Update()
     {
         HPslider.value = playerScript.health;
-        if(playerScript.health >=0){
+        if(playerScript.health <=0){
             SceneManager.LoadScene("StartScreen");
         }
     }

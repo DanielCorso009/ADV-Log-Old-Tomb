@@ -23,10 +23,10 @@ public class ButtonControl : MonoBehaviour
         
     }
     private void OnTriggerStay2D(Collider2D other){
-        if(!activated){ActivateAll();}
+        if(!activated&&!other.CompareTag("arrow")&&!other.CompareTag("bomb")){ActivateAll();}
     }
     private void OnTriggerExit2D(Collider2D other){
-        if(!permanent)DeactivateAll();
+        if(!permanent&&!other.CompareTag("arrow")&&!other.CompareTag("bomb"))DeactivateAll();
     }
     void ActivateAll(){
         activated = true;
