@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class UI : MonoBehaviour
@@ -9,17 +10,20 @@ public class UI : MonoBehaviour
     public GameObject player ;
     public PlayerController playerScript;
     public GameObject healthBar;
-    public Slider slider;
+    public Slider HPslider;
     void Start()
     {
         player =GameObject.Find("Player");
         playerScript = player.GetComponent<PlayerController>();
-        slider = healthBar.GetComponent<Slider>();
+        HPslider = healthBar.GetComponent<Slider>();
     }
 
     // Update is called once per frame
     void Update()
     {
-        slider.value = playerScript.health;
+        HPslider.value = playerScript.health;
+        if(playerScript.health >=0){
+            SceneManager.LoadScene("StartScreen");
+        }
     }
 }
