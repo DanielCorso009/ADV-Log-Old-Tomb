@@ -60,7 +60,8 @@ public class PlayerController : MonoBehaviour
                         }
                         else{
                             anim.SetBool("Push",true);
-                            Physics2D.CircleCastAll(trans.position+ new Vector3(move.x*0.25f,move.y*0.25f,transform.position.z),0.3f,move)[1].collider.GetComponent<MovingBlockBehavior>().Push(move);
+                            RaycastHit2D[] ray =Physics2D.CircleCastAll(trans.position+ new Vector3(move.x*0.25f,move.y*0.25f,transform.position.z),0.2f,move);
+                            for(int i =0;i<ray.Length;i++){if(ray[i].collider.CompareTag("Block"))ray[i].collider.GetComponent<MovingBlockBehavior>().Push(move);}
                         }
                     else{
                         if(freeze_inpts){
